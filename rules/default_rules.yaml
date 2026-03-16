@@ -1,0 +1,277 @@
+rules:
+  # ── Authentication Attacks ──
+
+  - id: ssh_brute_force
+    name: SSH Brute Force Attempt
+    description: Multiple failed SSH authentication attempts detected
+    severity: high
+    tags: [T1110, brute_force, ssh]
+    detection:
+      selection:
+        event_type: ssh_failed
+      condition: selection
+
+  - id: auth_failure_multiple
+    name: Multiple Authentication Failures
+    description: Repeated failed login attempts indicating credential guessing
+    severity: medium
+    tags: [T1110, brute_force, auth]
+    detection:
+      selection:
+        event_type: auth_failure
+      condition: selection
+
+  - id: auth_success_after_failures
+    name: Successful Login After Multiple Failures
+    description: Successful authentication following failed attempts — possible credential compromise
+    severity: high
+    tags: [T1110, auth, compromise]
+    detection:
+      selection:
+        event_type: auth_success
+      condition: selection
+
+  - id: login_from_unusual_ip
+    name: Login from Unusual Source
+    description: Authentication from an IP not seen in normal operations
+    severity: medium
+    tags: [T1078, lateral_movement]
+    detection:
+      selection:
+        event_type: auth_success
+        src_ip: "*"
+      condition: selection
+
+  # ── Privilege Escalation ──
+
+  - id: sudo_abuse
+    name: Suspicious Sudo Usage
+    description: Unusual sudo command execution detected
+    severity: high
+    tags: [T1548, privilege_escalation, sudo]
+    detection:
+      selection:
+        event_type: sudo
+      condition: selection
+
+  - id: su_root
+    name: Switch User to Root
+    description: User switched to root account
+    severity: medium
+    tags: [T1548, privilege_escalation]
+    detection:
+      selection:
+        event_type: su
+        message: "*root*"
+      condition: selection
+
+  - id: setuid_change
+    name: SUID/SGID Binary Modification
+    description: File permissions changed to include SUID or SGID bit
+    severity: critical
+    tags: [T1548, persistence]
+    detection:
+      selection:
+        raw: "*chmod +s*"
+      condition: selection
+
+  # ── Process Execution ──
+
+  - id: suspicious_process
+    name: Suspicious Process Execution
+    description: Known suspicious process or command executed
+    severity: high
+    tags: [T1059, execution]
+    detection:
+      selection:
+        raw:
+          - "*ncat*"
+          - "*netcat*"
+          - "*nc -e*"
+          - "*reverse shell*"
+          - "*python -c*import socket*"
+          - "*bash -i*"
+          - "*/dev/tcp/*"
+          - "*mkfifo*"
+      condition: selection
+
+  - id: web_shell_detection
+    name: Web Shell Detected
+    description: Known web shell signature detected in log
+    severity: critical
+    tags: [T1505, web_shell, persistence]
+    detection:
+      selection:
+        raw:
+          - "*c99shell*"
+          - "*r57shell*"
+          - "*WSO *"
+          - "*b374k*"
+          - "*weevely*"
+          - "*php passthru*"
+          - "*eval(base64_decode*"
+          - "*system(${*"
+      condition: selection
+
+  - id: crypto_miner
+    name: Cryptominer Indicators
+    description: Potential cryptocurrency mining activity detected
+    severity: high
+    tags: [T1496, cryptominer]
+    detection:
+      selection:
+        raw:
+          - "*stratum+tcp*"
+          - "*xmrig*"
+          - "*minerd*"
+          - "*cpuminer*"
+          - "*cryptonight*"
+      condition: selection
+
+  # ── Network Activity ──
+
+  - id: port_scan_detected
+    name: Port Scan Activity
+    description: Sequential port probing from a single source
+    severity: medium
+    tags: [T1046, reconnaissance, port_scan]
+    detection:
+      selection:
+        event_type: connection
+        tcp_flags: S
+      condition: selection
+
+  - id: dns_suspicious
+    name: Suspicious DNS Query
+    description: DNS query to a known suspicious or dynamic DNS domain
+    severity: medium
+    tags: [T1071, dns, c2]
+    detection:
+      selection:
+        event_type: dns_query
+        dns_query:
+          - "*.duckdns.org*"
+          - "*.no-ip.com*"
+          - "*.zapto.org*"
+          - "*.serveftp.com*"
+          - "*.onion.*"
+          - "*pastebin.com*"
+      condition: selection
+
+  - id: large_outbound_transfer
+    name: Large Outbound Data Transfer
+    description: Unusually large outbound data transfer detected
+    severity: high
+    tags: [T1048, exfiltration]
+    detection:
+      selection:
+        event_type: network
+        direction: outbound
+      condition: selection
+
+  - id: known_bad_ip
+    name: Connection to Known Malicious IP
+    description: Network connection to an IP flagged by threat intelligence
+    severity: critical
+    tags: [T1071, c2, threat_intel]
+    detection:
+      selection:
+        event_type: network
+        threat_intel_match: "true"
+      condition: selection
+
+  # ── Persistence ──
+
+  - id: crontab_modification
+    name: Crontab Modification
+    description: Cron scheduled task was modified
+    severity: high
+    tags: [T1053, persistence, crontab]
+    detection:
+      selection:
+        event_type: crontab
+        crontab_action: REPLACE
+      condition: selection
+
+  - id: new_user_created
+    name: New User Account Created
+    description: A new user account was created on the system
+    severity: medium
+    tags: [T1136, persistence, user_creation]
+    detection:
+      selection:
+        event_type: user_add
+      condition: selection
+
+  - id: authorized_keys_modified
+    name: SSH Authorized Keys Modified
+    description: SSH authorized_keys file was modified — potential backdoor
+    severity: critical
+    tags: [T1098, persistence, ssh]
+    detection:
+      selection:
+        raw: "*authorized_keys*"
+      condition: selection
+
+  - id: systemd_service_created
+    name: New Systemd Service
+    description: A new systemd service unit was created
+    severity: medium
+    tags: [T1543, persistence]
+    detection:
+      selection:
+        raw:
+          - "*systemctl enable*"
+          - "*Created symlink*/etc/systemd*"
+      condition: selection
+
+  # ── Web Attacks ──
+
+  - id: sql_injection
+    name: SQL Injection Attempt
+    description: Potential SQL injection detected in web request
+    severity: high
+    tags: [T1190, web_attack, sqli]
+    detection:
+      selection:
+        event_type: web_access
+        path:
+          - "*UNION SELECT*"
+          - "*OR 1=1*"
+          - "*DROP TABLE*"
+          - "*; --*"
+          - "*WAITFOR DELAY*"
+          - "*benchmark(*"
+      condition: selection
+
+  - id: path_traversal
+    name: Path Traversal Attempt
+    description: Directory traversal attack detected
+    severity: high
+    tags: [T1190, web_attack, lfi]
+    detection:
+      selection:
+        event_type: web_access
+        path:
+          - "*../*"
+          - "*..../*"
+          - "*%2e%2e%2f*"
+          - "*/etc/passwd*"
+          - "*/etc/shadow*"
+      condition: selection
+
+  - id: command_injection
+    name: Command Injection Attempt
+    description: OS command injection detected in web request
+    severity: critical
+    tags: [T1190, web_attack, rce]
+    detection:
+      selection:
+        event_type: web_access
+        path:
+          - "*;cat /etc*"
+          - "*|ls*"
+          - "*`whoami`*"
+          - "*$(id)*"
+          - "*%0a*"
+      condition: selection
