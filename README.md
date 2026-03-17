@@ -195,3 +195,7 @@ MIT
 <p align="center">
   <strong>Sentinel</strong> — Because threats don't sleep, and neither should your SOC. 🌙
 </p>
+
+---
+### 🌱 Also check out
+**[AI Garden](https://github.com/juliosuas/ai-garden)** — A living world built exclusively by AI agents. Watch it grow.
