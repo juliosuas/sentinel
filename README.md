@@ -160,6 +160,85 @@ Copy `.env.example` to `.env` and configure:
 | Setup time | ~5 min | Days | Hours | Hours |
 | Threat intel feeds | ✅ Built-in | ✅ Add-on | ✅ | ❌ |
 
+## ✅ AI Analysis Verification Patterns
+
+Sentinel's AI-powered analysis includes built-in verification to ensure detection accuracy and reduce false positives.
+
+### Detection Verification Matrix
+
+| Detection Type | Verification Method | Success Criteria |
+|---------------|--------------------|--------------------|
+| Brute Force | Threshold confirmation | ≥5 failed attempts from same IP within 5 minutes |
+| Port Scan | Sequential port analysis | ≥10 unique ports probed from single source within 60 seconds |
+| Data Exfiltration | Volume anomaly check | Outbound transfer exceeds 3σ from baseline for the source |
+| Privilege Escalation | Context chain validation | Process ancestry shows unprivileged → privileged transition |
+| Web Shell | Signature + behavior match | File hash OR behavioral pattern (POST → command execution) |
+| Lateral Movement | Multi-host correlation | Same credentials used across ≥2 hosts within correlation window |
+
+### AI Analyzer Confidence Scoring
+
+Every AI-generated analysis includes a confidence score and evidence chain:
+
+| Confidence Level | Score Range | AI Action | Human Action Required |
+|-----------------|------------|-----------|----------------------|
+| 🔴 High | 85-100% | Auto-respond (block/isolate) | Post-incident review |
+| 🟡 Medium | 50-84% | Alert with analysis | Review and decide |
+| 🟢 Low | 20-49% | Log with context | Periodic batch review |
+| ⚪ Informational | 0-19% | Enrich event metadata | No action needed |
+
+### Verification Checklist for New Detection Rules
+
+When adding or tuning detection rules, verify:
+
+- [ ] Rule triggers on known-bad test data (true positive validation)
+- [ ] Rule does NOT trigger on known-good traffic (false positive check)
+- [ ] MITRE ATT&CK technique mapping is accurate
+- [ ] Alert severity matches potential business impact
+- [ ] Correlation window is appropriate for the attack type
+- [ ] AI analysis provides actionable context (not just "suspicious activity detected")
+- [ ] Automated response action is proportional to confidence level
+
+---
+
+## 🖥️ Platform Compatibility
+
+| Platform | Architecture | Status | Notes |
+|----------|-------------|--------|-------|
+| Ubuntu 22.04+ | x86_64, ARM64 | ✅ Full | Recommended for production |
+| Debian 12+ | x86_64, ARM64 | ✅ Full | Stable and tested |
+| CentOS Stream 9 | x86_64 | ✅ Full | Enterprise environments |
+| Rocky Linux 9 | x86_64 | ✅ Full | RHEL-compatible |
+| macOS 13+ | ARM64, x86_64 | ⚠️ Partial | Development/testing only — limited syslog support |
+| Docker | Any | ✅ Full | `docker-compose up -d` — production ready |
+| Kubernetes | Any | ✅ Full | Helm chart available |
+| Raspberry Pi OS | ARM64 | ⚠️ Partial | Suitable for small network monitoring |
+| Windows Server | x86_64 (WSL2) | ⚠️ Partial | Use Docker or WSL2 |
+
+### Integration Compatibility
+
+| Integration | Protocol | Status | Notes |
+|-------------|----------|--------|-------|
+| Syslog (RFC 5424) | UDP/TCP | ✅ Full | Primary log ingestion |
+| Syslog (RFC 3164) | UDP/TCP | ✅ Full | Legacy format supported |
+| File watching | inotify/kqueue | ✅ Full | Log file tail monitoring |
+| AbuseIPDB | REST API | ✅ Full | IP reputation lookups |
+| AlienVault OTX | REST API | ✅ Full | Threat intelligence feeds |
+| Slack | Webhook | ✅ Full | Alert notifications |
+| WhatsApp | API | ✅ Full | Alert notifications |
+| Generic Webhook | HTTP POST | ✅ Full | Custom integrations |
+| Sigma Rules | YAML | ✅ Full | Detection rule format |
+| MITRE ATT&CK | Framework | ✅ Full | Technique mapping |
+
+### LLM Provider Compatibility
+
+| Provider | Status | Notes |
+|----------|--------|-------|
+| Anthropic Claude | ✅ Recommended | Best analysis quality |
+| OpenAI GPT-4 | ✅ Supported | Good analysis quality |
+| Local LLMs (Ollama) | ⚠️ Experimental | Reduced analysis depth |
+
+---
+
 ## 🛠️ Development
 
 ```bash
