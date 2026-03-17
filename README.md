@@ -278,3 +278,19 @@ MIT
 ---
 ### 🌱 Also check out
 **[AI Garden](https://github.com/juliosuas/ai-garden)** — A living world built exclusively by AI agents. Watch it grow.
+
+---
+
+## 🧠 AI Analysis Verification
+
+Sentinel's AI doesn't just detect — it proves its work. Every alert includes a confidence score, correlation evidence, and plain-language explanation reviewed against statistical baselines.
+
+See [`docs/ai-analysis-verification.md`](docs/ai-analysis-verification.md) for the full verification methodology.
+
+| Metric | Target | Method |
+|--------|--------|--------|
+| False Positive Rate | <5% | Monthly 100-alert audit |
+| Detection Coverage | >90% MITRE ATT&CK | Atomic red team testing |
+| Alert-to-Action | <15 min (critical) | Automated SLA tracking |
+| AI Explanation Accuracy | >95% | Analyst feedback loop |
+
